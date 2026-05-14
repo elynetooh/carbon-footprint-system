@@ -1,14 +1,64 @@
 {% extends 'footprint/base.html' %}
 {% block content %}
-<h1>💧 Add Water Entry</h1>
-<form method="POST">
-    {% csrf_token %}
-    <label>Water Used (liters)</label>
-    <input type="number" name="liters" step="0.1" required>
-    <label>Date</label>
-    <input type="date" name="date" required>
-    <br><br>
-    <button type="submit" class="btn">Save Entry</button>
-    <a href="/" class="btn">Cancel</a>
-</form>
+
+<div style="background:#f4f6f4;min-height:calc(100vh - 60px);padding:40px 20px;">
+  <div style="max-width:640px;margin:0 auto;background:#fff;border-radius:12px;border:1px solid #e0e0e0;padding:36px;">
+
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px;">
+      <div style="width:48px;height:48px;border-radius:10px;background:#e3f2fd;display:flex;align-items:center;justify-content:center;font-size:24px;">💧</div>
+      <div>
+        <h2 style="margin:0;font-size:20px;color:#1a1a1a;">Add water entry</h2>
+        <p style="margin:0;font-size:13px;color:#666;">Log your water usage to track your carbon footprint</p>
+      </div>
+    </div>
+
+    <hr style="border:none;border-top:1px solid #eee;margin:20px 0;">
+
+    <form method="POST">
+      {% csrf_token %}
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px;">
+        <div>
+          <label style="display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:6px;letter-spacing:0.03em;">WATER USED (LITERS)</label>
+          <input type="number" name="liters" id="liters" step="0.1" required oninput="calcCO2()" placeholder="e.g. 200" style="width:100%;height:42px;border:1px solid #ccc;border-radius:8px;padding:0 12px;font-size:14px;color:#1a1a1a;outline:none;">
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:6px;letter-spacing:0.03em;">DATE</label>
+          <input type="date" name="date" required style="width:100%;height:42px;border:1px solid #ccc;border-radius:8px;padding:0 12px;font-size:14px;color:#1a1a1a;outline:none;">
+        </div>
+      </div>
+
+      <div style="background:#e3f2fd;border-left:4px solid #1565c0;border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:18px;font-size:12px;color:#0d47a1;line-height:1.7;">
+        <strong>Emission factor:</strong> Water treatment emits approximately <strong>0.001 kg CO₂ per liter</strong> of water used
+      </div>
+
+      <div style="background:#f9f9f9;border:1px solid #eee;border-radius:8px;padding:16px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-size:12px;color:#666;">Estimated CO₂ for this entry</div>
+          <div style="font-size:11px;color:#aaa;margin-top:2px;">Updates as you type</div>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:4px;">
+          <span id="co2-out" style="font-size:26px;font-weight:600;color:#2e7d32;">—</span>
+          <span style="font-size:13px;color:#888;">kg CO₂</span>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;">
+        <button type="submit" style="flex:1;height:42px;background:#1a4a2e;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Save entry</button>
+        <a href="/" style="height:42px;padding:0 20px;border:1px solid #ccc;border-radius:8px;font-size:14px;color:#555;background:#fff;display:flex;align-items:center;text-decoration:none;">Cancel</a>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script>
+function calcCO2() {
+  const liters = parseFloat(document.getElementById('liters').value);
+  const out = document.getElementById('co2-out');
+  if (!liters || liters <= 0) { out.textContent = '—'; return; }
+  out.textContent = (liters * 0.001).toFixed(3);
+}
+</script>
+
 {% endblock %}

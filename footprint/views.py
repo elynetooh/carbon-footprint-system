@@ -309,19 +309,58 @@ def download_pdf(request):
     current_month = timezone.now().month
     current_year = timezone.now().year
 
-    transports = Transportation.objects.filter(user=user, date__month=current_month, date__year=current_year)
-    energies = EnergyUsage.objects.filter(user=user, date__month=current_month, date__year=current_year)
-    wastes = WasteData.objects.filter(user=user, date__month=current_month, date__year=current_year)
-    waters = WaterUsage.objects.filter(user=user, date__month=current_month, date__year=current_year)
+    try:
+        profile = user.userprofile
+        department = profile.department
+    except:
+        department = 'kcic_admin' if user.is_staff else 'unknown'
 
-    transport_co2 = round(sum([t.co2_kg() for t in transports]), 2)
-    energy_co2 = round(sum([e.co2_kg() for e in energies]), 2)
-    waste_co2 = round(sum([w.co2_kg() for w in wastes]), 2)
-    water_co2 = round(sum([w.co2_kg() for w in waters]), 2)
+    from .models import UserProfile
+
+    if department == 'manager' or user.is_staff:
+        # Aggregate all departments
+        profiles = UserProfile.objects.exclude(department='manager')
+        transport_co2 = energy_co2 = waste_co2 = water_co2 = 0
+        for p in profiles:
+            u = p.user
+            transport_co2 += sum([x.co2_kg() for x in Transportation.objects.filter(user=u, date__month=current_month, date__year=current_year)])
+            energy_co2 += sum([x.co2_kg() for x in EnergyUsage.objects.filter(user=u, date__month=current_month, date__year=current_year)])
+            waste_co2 += sum([x.co2_kg() for x in WasteData.objects.filter(user=u, date__month=current_month, date__year=current_year)])
+            water_co2 += sum([x.co2_kg() for x in WaterUsage.objects.filter(user=u, date__month=current_month, date__year=current_year)])
+        transport_co2 = round(transport_co2, 2)
+        energy_co2 = round(energy_co2, 2)
+        waste_co2 = round(waste_co2, 2)
+        water_co2 = round(water_co2, 2)
+        report_title = "Sanergy Kenya — Company Carbon Report"
+        report_name = "sanergy_company"
+    else:
+        # Individual employee data
+        transports = Transportation.objects.filter(user=user, date__month=current_month, date__year=current_year)
+        energies = EnergyUsage.objects.filter(user=user, date__month=current_month, date__year=current_year)
+        wastes = WasteData.objects.filter(user=user, date__month=current_month, date__year=current_year)
+        waters = WaterUsage.objects.filter(user=user, date__month=current_month, date__year=current_year)
+        transport_co2 = round(sum([t.co2_kg() for t in transports]), 2)
+        energy_co2 = round(sum([e.co2_kg() for e in energies]), 2)
+        waste_co2 = round(sum([w.co2_kg() for w in wastes]), 2)
+        water_co2 = round(sum([w.co2_kg() for w in waters]), 2)
+        report_title = f"KCIC Carbon Footprint Report — {user.username}"
+        report_name = user.username
+
     total_co2 = round(transport_co2 + energy_co2 + waste_co2 + water_co2, 2)
 
+    if total_co2 == 0:
+        carbon_score = 'N/A'
+    elif total_co2 <= 5:
+        carbon_score = 'A'
+    elif total_co2 <= 15:
+        carbon_score = 'B'
+    elif total_co2 <= 30:
+        carbon_score = 'C'
+    else:
+        carbon_score = 'D'
+
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="carbon_report_{user.username}.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="carbon_report_{report_name}.pdf"'
 
     p = canvas.Canvas(response, pagesize=A4)
     width, height = A4
@@ -329,31 +368,33 @@ def download_pdf(request):
     p.setFillColorRGB(0.18, 0.49, 0.20)
     p.rect(0, height-80, width, 80, fill=True, stroke=False)
     p.setFillColorRGB(1, 1, 1)
-    p.setFont("Helvetica-Bold", 22)
-    p.drawString(50, height-50, "KCIC Carbon Footprint Report - Sanergy")
+    p.setFont("Helvetica-Bold", 18)
+    p.drawString(50, height-50, report_title)
 
     p.setFillColorRGB(0, 0, 0)
     p.setFont("Helvetica", 12)
-    p.drawString(50, height-110, f"User: {user.username}")
-    p.drawString(50, height-130, f"Month: {date(current_year, current_month, 1).strftime('%B %Y')}")
-    p.drawString(50, height-150, f"Generated: {date.today()}")
+    p.drawString(50, height-110, f"Month: {date(current_year, current_month, 1).strftime('%B %Y')}")
+    p.drawString(50, height-130, f"Generated: {date.today()}")
+    if department not in ['manager', 'kcic_admin']:
+        p.drawString(50, height-150, f"User: {user.username}")
+        p.drawString(50, height-170, f"Department: {department.replace('_', ' ').title()}")
 
     p.setFont("Helvetica-Bold", 14)
-    p.drawString(50, height-190, "Monthly Emissions Summary:")
+    p.drawString(50, height-210, "Monthly Emissions Summary:")
 
     p.setFont("Helvetica", 12)
-    p.drawString(70, height-220, f"Transport:  {transport_co2} kg CO2")
-    p.drawString(70, height-240, f"Energy:     {energy_co2} kg CO2")
-    p.drawString(70, height-260, f"Waste:      {waste_co2} kg CO2")
-    p.drawString(70, height-280, f"Water:      {water_co2} kg CO2")
+    p.drawString(70, height-240, f"Transport:  {transport_co2} kg CO2")
+    p.drawString(70, height-260, f"Energy:     {energy_co2} kg CO2")
+    p.drawString(70, height-280, f"Waste:      {waste_co2} kg CO2")
+    p.drawString(70, height-300, f"Water:      {water_co2} kg CO2")
 
     p.setFont("Helvetica-Bold", 14)
-    p.drawString(50, height-320, f"Total CO2: {total_co2} kg")
+    p.drawString(50, height-340, f"Total CO2 This Month: {total_co2} kg")
+    p.drawString(50, height-365, f"Carbon Score: {carbon_score}")
 
     p.showPage()
     p.save()
     return response
-
 
 @login_required
 def admin_dashboard(request):

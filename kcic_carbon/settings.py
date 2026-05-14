@@ -24,8 +24,9 @@ SECRET_KEY = 'django-insecure-9y&t2bgoejuju90m98#n#hd7-!uuy+m$z#@xuywcz5x2b7x$%=
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
-
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    "carbon-footprint-system-production.up.railway.app",
+]
 
 
 # Application definition

@@ -1,0 +1,19 @@
+{% extends 'footprint/base.html' %}
+{% block content %}
+<h1>🌿 Create Account — Sanergy Staff</h1>
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <label><strong>Department</strong></label>
+    <select name="department" style="width:100%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:5px;">
+        <option value="field_operations">🚛 Field Operations</option>
+        <option value="processing_plant">🏭 Processing Plant</option>
+        <option value="water_sanitation">💧 Water & Sanitation</option>
+        <option value="waste_management">♻️ Waste Management</option>
+        <option value="manager">👨‍💼 Sanergy Manager</option>
+    </select>
+    <br><br>
+    <button type="submit" class="btn">Register</button>
+    <a href="/login/" class="btn" style="background:#555;">Already have account? Login</a>
+</form>
+{% endblock %}

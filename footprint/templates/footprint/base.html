@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KCIC Carbon Tracker</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+        .navbar {
+            background: #2e7d32;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 15px;
+        }
+        .navbar a:hover { text-decoration: underline; }
+        .navbar .brand { font-size: 20px; font-weight: bold; }
+        .content { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
+        .btn {
+            display: inline-block;
+            background: #2e7d32;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        .btn:hover { background: #1b5e20; }
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            min-width: 150px;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <a href="/dashboard/" class="brand">🌿 KCIC Carbon Tracker</a>
+    <div>
+        {% if user.is_authenticated %}
+            {% if user.is_staff %}
+                <a href="/dashboard/">Dashboard</a>
+                <a href="/admin-dashboard/" style="color:#ffcc00;">📊 KCIC Admin</a>
+            {% else %}
+                <a href="/dashboard/">Dashboard</a>
+                {% if department == 'field_operations' %}
+                    <a href="/transport/">Transport</a>
+                {% elif department == 'processing_plant' %}
+                    <a href="/energy/">Energy</a>
+                {% elif department == 'water_sanitation' %}
+                    <a href="/water/">Water</a>
+                {% elif department == 'waste_management' %}
+                    <a href="/waste/">Waste</a>
+                {% elif department == 'manager' %}
+                    <a href="/manager-dashboard/" style="color:#ffcc00;">📊 Manager View</a>
+                {% endif %}
+            {% endif %}
+            <a href="#">👤 {{ user.username }}</a>
+            <a href="/logout/" style="background:#c62828; padding:8px 15px; border-radius:5px;">Logout</a>
+        {% endif %}
+    </div>
+</nav>
+<div class="content">
+    {% block content %}{% endblock %}
+</div>
+</body>
+</html>

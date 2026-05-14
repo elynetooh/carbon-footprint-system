@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data History - KCIC Carbon Tracker</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: white;
+            padding: 30px;
+        }
+        h1 { color: #4ade80; margin-bottom: 24px; }
+        h2 { color: #86efac; margin-bottom: 14px; font-size: 18px; }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .btn {
+            background: #22c55e;
+            color: white;
+            padding: 10px 18px;
+            text-decoration: none;
+            border-radius: 8px;
+            display: inline-block;
+            font-size: 14px;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #22c55e;
+            color: #22c55e;
+            padding: 10px 18px;
+            text-decoration: none;
+            border-radius: 8px;
+            display: inline-block;
+            font-size: 14px;
+        }
+        .section {
+            background: #1e293b;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 28px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 400px;
+        }
+        th {
+            background: #14532d;
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #86efac;
+        }
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #334155;
+            font-size: 14px;
+            color: #cbd5e1;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #334155; }
+        .co2-pill {
+            background: #14532d;
+            color: #4ade80;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .empty-row td {
+            text-align: center;
+            color: #64748b;
+            padding: 24px;
+            font-style: italic;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .count-badge {
+            background: #0f172a;
+            color: #94a3b8;
+            font-size: 12px;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+        .dept-label {
+            background: #14532d;
+            color: #4ade80;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <h1>📊 My Submission History</h1>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a href="{% url 'dashboard' %}" class="btn-outline">⬅ Dashboard</a>
+        <a href="{% url 'download_pdf' %}" class="btn">⬇ Download PDF</a>
+    </div>
+</div>
+
+<!-- Department label -->
+<div>
+    {% if department == 'field_operations' %}
+        <span class="dept-label">🚛 Field Operations — Transport Records</span>
+    {% elif department == 'processing_plant' %}
+        <span class="dept-label">🏭 Processing Plant — Energy Records</span>
+    {% elif department == 'water_sanitation' %}
+        <span class="dept-label">💧 Water & Sanitation — Water Records</span>
+    {% elif department == 'waste_management' %}
+        <span class="dept-label">♻️ Waste Management — Waste Records</span>
+    {% else %}
+        <span class="dept-label">👨‍💼 Manager / Admin — All Records</span>
+    {% endif %}
+</div>
+
+<!-- FIELD OPERATIONS: Transport only -->
+{% if department == 'field_operations' %}
+<div class="section">
+    <div class="section-header">
+        <h2>🚛 Transport History</h2>
+        <span class="count-badge">{{ transports.count }} record{{ transports.count|pluralize }}</span>
+    </div>
+    <table>
+        <tr>
+            <th>Mode</th>
+            <th>Distance (km)</th>
+            <th>Date</th>
+            <th>CO₂ (kg)</th>
+        </tr>
+        {% for t in transports %}
+        <tr>
+            <td>{{ t.mode }}</td>
+            <td>{{ t.distance_km }}</td>
+            <td>{{ t.date }}</td>
+            <td><span class="co2-pill">{{ t.co2_kg }} kg</span></td>
+        </tr>
+        {% empty %}
+        <tr class="empty-row"><td colspan="4">No transport records yet.</td></tr>
+        {% endfor %}
+    </table>
+</div>
+
+<!-- PROCESSING PLANT: Energy only -->
+{% elif department == 'processing_plant' %}
+<div class="section">
+    <div class="section-header">
+        <h2>⚡ Energy History</h2>
+        <span class="count-badge">{{ energies.count }} record{{ energies.count|pluralize }}</span>
+    </div>
+    <table>
+        <tr>
+            <th>kWh</th>
+            <th>Date</th>
+            <th>CO₂ (kg)</th>
+        </tr>
+        {% for e in energies %}
+        <tr>
+            <td>{{ e.kwh }}</td>
+            <td>{{ e.date }}</td>
+            <td><span class="co2-pill">{{ e.co2_kg }} kg</span></td>
+        </tr>
+        {% empty %}
+        <tr class="empty-row"><td colspan="3">No energy records yet.</td></tr>
+        {% endfor %}
+    </table>
+</div>
+
+<!-- WATER & SANITATION: Water only -->
+{% elif department == 'water_sanitation' %}
+<div class="section">
+    <div class="section-header">
+        <h2>💧 Water History</h2>
+        <span class="count-badge">{{ waters.count }} record{{ waters.count|pluralize }}</span>
+    </div>
+    <table>
+        <tr>
+            <th>Litres</th>
+            <th>Date</th>
+            <th>CO₂ (kg)</th>
+        </tr>
+        {% for w in waters %}
+        <tr>
+            <td>{{ w.liters }}</td>
+            <td>{{ w.date }}</td>
+            <td><span class="co2-pill">{{ w.co2_kg }} kg</span></td>
+        </tr>
+        {% empty %}
+        <tr class="empty-row"><td colspan="3">No water records yet.</td></tr>
+        {% endfor %}
+    </table>
+</div>
+
+<!-- WASTE MANAGEMENT: Waste only -->
+{% elif department == 'waste_management' %}
+<div class="section">
+    <div class="section-header">
+        <h2>♻️ Waste History</h2>
+        <span class="count-badge">{{ wastes.count }} record{{ wastes.count|pluralize }}</span>
+    </div>
+    <table>
+        <tr>
+            <th>Weight (kg)</th>
+            <th>Date</th>
+            <th>CO₂ (kg)</th>
+        </tr>
+        {% for w in wastes %}
+        <tr>
+            <td>{{ w.weight_kg }}</td>
+            <td>{{ w.date }}</td>
+            <td><span class="co2-pill">{{ w.co2_kg }} kg</span></td>
+        </tr>
+        {% empty %}
+        <tr class="empty-row"><td colspan="3">No waste records yet.</td></tr>
+        {% endfor %}
+    </table>
+</div>
+
+<!-- MANAGER / ADMIN: All 4 tables -->
+{% else %}
+<div class="section">
+    <div class="section-header">
+        <h2>🚛 Transport</h2>
+        <span class="count-badge">{{ transports.count }} record{{ transports.count|pluralize }}</span>
+    </div>
+    <table>
+        <tr><th>Mode</th><th>Distance (km)</th><th>Date</th><th>CO₂ (kg)</th></tr>
+        {% for t in transports %}
+        <tr>
+            <td>{{ t.mode }}</td><td>{{ t.distance_km }}</td>
+            <td>{{ t.date }}</td>
+            <td><span class="co2-pill">{{ t.co2_kg }} kg</span></td>
+        </tr>
+        {% empty %}
+        <tr class="empty-row"><td colspan="4">No transport records yet.</td></tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div class="section">
+    <div class="section-header">
+        <h2>⚡ Energy</h2>
+        <span class="count-badge">{{ energies.count }} record{{ energies.count|pluralize }}</span>
+    </div>
+    <table>
+        <tr><th>kWh</th><th>Date</th><th>CO₂ (kg)</th></tr>
+        {% for e in energies %}
+        <tr>
+            <td>{{ e.kwh }}</td><td>{{ e.date }}</td>
+            <td><span class="co2-pill">{{ e.co2_kg }} kg</span></td>
+        </tr>
+        {% empty %}
+        <tr class="empty-row"><td colspan="3">No energy records yet.</td></tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div class="section">
+    <div class="section-header">
+        <h2>💧 Water</h2>
+        <span class="count-badge">{{ waters.count }} record{{ waters.count|pluralize }}</span>
+    </div>
+    <table>
+        <tr><th>Litres</th><th>Date</th><th>CO₂ (kg)</th></tr>
+        {% for w in waters %}
+        <tr>
+            <td>{{ w.liters }}</td><td>{{ w.date }}</td>
+            <td><span class="co2-pill">{{ w.co2_kg }} kg</span></td>
+        </tr>
+        {% empty %}
+        <tr class="empty-row"><td colspan="3">No water records yet.</td></tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div class="section">
+    <div class="section-header">
+        <h2>♻️ Waste</h2>
+        <span class="count-badge">{{ wastes.count }} record{{ wastes.count|pluralize }}</span>
+    </div>
+    <table>
+        <tr><th>Weight (kg)</th><th>Date</th><th>CO₂ (kg)</th></tr>
+        {% for w in wastes %}
+        <tr>
+            <td>{{ w.weight_kg }}</td><td>{{ w.date }}</td>
+            <td><span class="co2-pill">{{ w.co2_kg }} kg</span></td>
+        </tr>
+        {% empty %}
+        <tr class="empty-row"><td colspan="3">No waste records yet.</td></tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+
+</body>
+</html>

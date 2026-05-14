@@ -1,0 +1,21 @@
+{% extends 'footprint/base.html' %}
+{% block content %}
+<h1>🚗 Add Transport Entry</h1>
+<form method="POST">
+    {% csrf_token %}
+    <label>Mode of Transport</label>
+    <select name="mode">
+        <option value="car">Private Car</option>
+        <option value="matatu">Matatu / Bus</option>
+        <option value="boda">Boda Boda</option>
+        <option value="walking">Walking</option>
+    </select>
+    <label>Distance (km)</label>
+    <input type="number" name="distance" step="0.1" required>
+    <label>Date</label>
+    <input type="date" name="date" required>
+    <br><br>
+    <button type="submit" class="btn">Save Entry</button>
+    <a href="/" class="btn">Cancel</a>
+</form>
+{% endblock %}

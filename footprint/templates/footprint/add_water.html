@@ -1,0 +1,14 @@
+{% extends 'footprint/base.html' %}
+{% block content %}
+<h1>💧 Add Water Entry</h1>
+<form method="POST">
+    {% csrf_token %}
+    <label>Water Used (liters)</label>
+    <input type="number" name="liters" step="0.1" required>
+    <label>Date</label>
+    <input type="date" name="date" required>
+    <br><br>
+    <button type="submit" class="btn">Save Entry</button>
+    <a href="/" class="btn">Cancel</a>
+</form>
+{% endblock %}

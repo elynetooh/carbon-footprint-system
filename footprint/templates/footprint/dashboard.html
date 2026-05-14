@@ -1,0 +1,587 @@
+{% extends 'footprint/base.html' %}
+{% block content %}
+
+<style>
+  body { margin: 0; background: #f5f5f5; }
+
+  .tracker-layout {
+    display: flex;
+    min-height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: #fff;
+    border-right: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+  }
+
+  .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 16px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .sidebar-logo-icon {
+    width: 32px; height: 32px;
+    background: #2e7d32;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .sidebar-logo-icon svg { width: 18px; height: 18px; fill: white; }
+  .sidebar-logo-text { font-size: 13px; font-weight: 600; color: #1a1a1a; line-height: 1.2; }
+  .sidebar-logo-sub  { font-size: 10px; color: #888; }
+
+  .nav-section { padding: 8px 0; flex: 1; overflow-y: auto; }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    font-size: 13px;
+    color: #555;
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: background 0.15s;
+  }
+
+  .nav-item:hover { background: #f0f0f0; color: #2e7d32; text-decoration: none; }
+
+  .nav-item.active {
+    color: #2e7d32;
+    border-left-color: #2e7d32;
+    background: #e8f5e9;
+    font-weight: 600;
+  }
+
+  .nav-item svg { width: 17px; height: 17px; flex-shrink: 0; }
+
+  .nav-divider {
+    font-size: 10px;
+    font-weight: 700;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 14px 16px 4px;
+  }
+
+  .nav-action {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 12px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: opacity 0.15s;
+  }
+
+  .nav-action:hover { opacity: 0.85; text-decoration: none; }
+  .nav-action svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  .nav-action.green  { background: #2e7d32; color: white; }
+  .nav-action.gray   { background: #555;    color: white; }
+  .nav-action.blue   { background: #1565c0; color: white; }
+
+  .nav-bottom { border-top: 1px solid #e0e0e0; padding: 8px 0; }
+
+  /* ── Main area ── */
+  .main-wrap {
+    margin-left: 220px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  /* ── Welcome bar ── */
+  .welcome-bar {
+    background: linear-gradient(135deg, #2e7d32 0%, #43a047 60%, #66bb6a 100%);
+    padding: 16px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .welcome-left {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .welcome-greeting {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.2px;
+  }
+
+  .welcome-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.8);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .welcome-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .dept-badge {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.4);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+  }
+
+  .avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    border: 2px solid rgba(255,255,255,0.6);
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ── Alert banner ── */
+  .alert-banner {
+    background: #fff8e1;
+    border-left: 4px solid #ff9800;
+    padding: 11px 24px;
+    font-size: 13px;
+    color: #5d4037;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .alert-banner a {
+    color: #2e7d32;
+    font-weight: 600;
+    text-decoration: none;
+    margin-left: auto;
+  }
+
+  /* ── Page content ── */
+  .page-content { padding: 24px; }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 12px;
+  }
+
+  /* ── Metric cards ── */
+  .metric-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .metric-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 16px 18px;
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
+    transition: box-shadow 0.15s;
+  }
+
+  .metric-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .metric-card.active-dept { border: 2px solid #2e7d32; }
+  .metric-card.faded { opacity: 0.3; }
+  .metric-card .card-icon { font-size: 20px; margin-bottom: 4px; }
+  .metric-card .card-label { font-size: 11px; color: #888; margin-bottom: 2px; }
+  .metric-card .card-value { font-size: 20px; font-weight: 700; color: #2e7d32; }
+  .metric-card .card-resp { font-size: 10px; color: #2e7d32; margin-top: 4px; }
+
+  .score-card .score-letter { font-size: 30px; font-weight: 700; line-height: 1.1; }
+  .score-card .score-hint { font-size: 10px; color: #bbb; }
+
+  /* ── Total + prediction ── */
+  .total-line { font-size: 17px; font-weight: 700; color: #1a1a1a; margin-bottom: 12px; }
+
+  .prediction-banner {
+    background: #fff8e1;
+    border-left: 4px solid #ff9800;
+    border-radius: 0 6px 6px 0;
+    padding: 11px 16px;
+    font-size: 13px;
+    color: #5d4037;
+    margin-bottom: 20px;
+  }
+
+  .prediction-banner.down {
+    background: #e8f5e9;
+    border-left-color: #2e7d32;
+    color: #1b5e20;
+  }
+
+  /* ── Charts ── */
+  .charts-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+
+  .chart-box {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 20px;
+    flex: 1;
+    min-width: 260px;
+  }
+
+  .chart-box h3 { font-size: 13px; font-weight: 600; color: #555; margin-bottom: 14px; }
+
+  .dept-emission-num {
+    font-size: 56px;
+    font-weight: 700;
+    color: #2e7d32;
+    line-height: 1;
+    text-align: center;
+    margin: 16px 0 6px;
+  }
+
+  .dept-emission-label { text-align: center; font-size: 14px; color: #555; }
+
+  /* ── Recommendations ── */
+  .recs-section { margin-top: 4px; }
+  .recs-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .rec-item {
+    background: #f1f8f1;
+    border-left: 4px solid #2e7d32;
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #1b5e20;
+    line-height: 1.5;
+  }
+
+  .rec-item:last-child { margin-bottom: 0; }
+</style>
+
+<div class="tracker-layout">
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M17 8C8 10 5.9 16.17 3.82 19.54L5.73 21C7 18.68 9.3 15.5 13 14c-2.5 3-3.5 5.5-3.27 8H12c0-2.5 1-5 3-7 0 2.5-.5 5 1 7h2c0-4 1-6.5 3-9-2 0-3.5.5-4 1z"/></svg>
+      </div>
+      <div>
+        <div class="sidebar-logo-text">KCIC Tracker</div>
+        <div class="sidebar-logo-sub">Carbon Footprint</div>
+      </div>
+    </div>
+
+    <nav class="nav-section">
+
+      <!-- Nav links -->
+      <a href="/dashboard/" class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+
+      {% if department == 'field_operations' %}
+      <a href="/transport/" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        Input Transport Data
+      </a>
+      {% elif department == 'processing_plant' %}
+      <a href="/energy/" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Input Energy Data
+      </a>
+      {% elif department == 'water_sanitation' %}
+      <a href="/water/" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6 8 4 12 4 14a8 8 0 0016 0c0-2-2-6-8-12z"/></svg>
+        Input Water Data
+      </a>
+      {% elif department == 'waste_management' %}
+      <a href="/waste/" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        Input Waste Data
+      </a>
+      {% elif department == 'manager' %}
+      <a href="/manager-dashboard/" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Manager View
+      </a>
+      {% elif department == 'kcic_admin' %}
+      <a href="/admin-dashboard/" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        KCIC Admin
+      </a>
+      {% endif %}
+
+      <a href="/data-history/" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        History
+      </a>
+
+      <!-- Quick actions -->
+      <div class="nav-divider">Quick Actions</div>
+
+      {% if department == 'field_operations' %}
+      <a href="/transport/" class="nav-action green">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Transport
+      </a>
+      {% elif department == 'processing_plant' %}
+      <a href="/energy/" class="nav-action green">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Energy
+      </a>
+      {% elif department == 'water_sanitation' %}
+      <a href="/water/" class="nav-action green">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Water
+      </a>
+      {% elif department == 'waste_management' %}
+      <a href="/waste/" class="nav-action green">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Waste
+      </a>
+      {% endif %}
+
+      <a href="/data-history/" class="nav-action gray">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        View History
+      </a>
+
+      <a href="/download-pdf/" class="nav-action blue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download Report
+      </a>
+
+    </nav>
+
+    <div class="nav-bottom">
+      <a href="/logout/" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </a>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ══ -->
+  <div class="main-wrap">
+
+    <!-- Styled welcome bar -->
+    <div class="welcome-bar">
+      <div class="welcome-left">
+        <div class="welcome-greeting">👋 Welcome back, {{ request.user.username }}!</div>
+        <div class="welcome-sub">
+          📅 {{ current_month }} &nbsp;·&nbsp; Carbon Footprint Dashboard
+        </div>
+      </div>
+      <div class="welcome-right">
+        <span class="dept-badge">
+          {% if department == 'field_operations' %}🚛 Field Operations
+          {% elif department == 'processing_plant' %}🏭 Processing Plant
+          {% elif department == 'water_sanitation' %}💧 Water & Sanitation
+          {% elif department == 'waste_management' %}♻️ Waste Management
+          {% elif department == 'kcic_admin' %}👨‍💻 KCIC Admin
+          {% else %}👨‍💼 Manager
+          {% endif %}
+        </span>
+        <div class="avatar">{{ request.user.username|slice:":2"|upper }}</div>
+      </div>
+    </div>
+
+    <!-- Alert banner -->
+    {% if not_submitted %}
+    <div class="alert-banner">
+      ⚠️ <strong>Reminder:</strong> You have not submitted your {{ current_month }} data yet!
+      {% if department == 'field_operations' %}<a href="/transport/">Add Transport Data →</a>
+      {% elif department == 'processing_plant' %}<a href="/energy/">Add Energy Data →</a>
+      {% elif department == 'water_sanitation' %}<a href="/water/">Add Water Data →</a>
+      {% elif department == 'waste_management' %}<a href="/waste/">Add Waste Data →</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="page-content">
+
+      <!-- Emission cards -->
+      <div class="section-title">This Month's Emissions</div>
+      <div class="metric-row">
+        <div class="metric-card {% if department == 'field_operations' or department == 'manager' or department == 'kcic_admin' %}active-dept{% else %}faded{% endif %}">
+          <div class="card-icon">🚗</div>
+          <div class="card-label">Transport</div>
+          <div class="card-value">{{ transport_co2 }} kg</div>
+          {% if department == 'field_operations' %}<div class="card-resp">✅ Your Responsibility</div>{% endif %}
+        </div>
+
+        <div class="metric-card {% if department == 'processing_plant' or department == 'manager' or department == 'kcic_admin' %}active-dept{% else %}faded{% endif %}">
+          <div class="card-icon">⚡</div>
+          <div class="card-label">Energy</div>
+          <div class="card-value">{{ energy_co2 }} kg</div>
+          {% if department == 'processing_plant' %}<div class="card-resp">✅ Your Responsibility</div>{% endif %}
+        </div>
+
+        <div class="metric-card {% if department == 'waste_management' or department == 'manager' or department == 'kcic_admin' %}active-dept{% else %}faded{% endif %}">
+          <div class="card-icon">🗑️</div>
+          <div class="card-label">Waste</div>
+          <div class="card-value">{{ waste_co2 }} kg</div>
+          {% if department == 'waste_management' %}<div class="card-resp">✅ Your Responsibility</div>{% endif %}
+        </div>
+
+        <div class="metric-card {% if department == 'water_sanitation' or department == 'manager' or department == 'kcic_admin' %}active-dept{% else %}faded{% endif %}">
+          <div class="card-icon">💧</div>
+          <div class="card-label">Water</div>
+          <div class="card-value">{{ water_co2 }} kg</div>
+          {% if department == 'water_sanitation' %}<div class="card-resp">✅ Your Responsibility</div>{% endif %}
+        </div>
+
+        <div class="metric-card score-card">
+          <div class="score-letter" style="color:{{ score_color }}">{{ carbon_score }}</div>
+          <div class="card-label">Carbon Score</div>
+          <div class="score-hint">A = Best &nbsp; D = Worst</div>
+        </div>
+      </div>
+
+      <!-- Total -->
+      <div class="total-line">Total CO₂ This Month: {{ total_co2 }} kg</div>
+
+      <!-- Prediction -->
+      {% if prediction > 0 %}
+      <div class="prediction-banner {% if prediction <= total_co2 %}down{% endif %}">
+        📈 <strong>Next Month Prediction:</strong> {{ prediction }} kg CO₂
+        {% if prediction > total_co2 %}— ⚠️ Emissions are trending UP. Take action now!
+        {% else %}— ✅ Emissions are trending DOWN. Great work!
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <!-- Charts -->
+      <div class="section-title">Emissions Overview</div>
+      <div class="charts-row">
+        {% if department == 'manager' or department == 'kcic_admin' %}
+        <div class="chart-box">
+          <h3>📊 Emissions Breakdown</h3>
+          <canvas id="donutChart"></canvas>
+        </div>
+        {% else %}
+        <div class="chart-box" style="text-align:center;">
+          <h3>📌 Your Department Emission</h3>
+          <div class="dept-emission-num">
+            {% if department == 'field_operations' %}{{ transport_co2 }}
+            {% elif department == 'processing_plant' %}{{ energy_co2 }}
+            {% elif department == 'water_sanitation' %}{{ water_co2 }}
+            {% elif department == 'waste_management' %}{{ waste_co2 }}
+            {% endif %}
+          </div>
+          <div class="dept-emission-label">
+            kg CO₂ from
+            {% if department == 'field_operations' %}Transport
+            {% elif department == 'processing_plant' %}Energy
+            {% elif department == 'water_sanitation' %}Water
+            {% elif department == 'waste_management' %}Waste
+            {% endif %}
+          </div>
+          <p style="color:#999; font-size:13px; margin-top:14px;">Carbon Score: <strong style="color:{{ score_color }};">{{ carbon_score }}</strong></p>
+        </div>
+        {% endif %}
+
+        <div class="chart-box">
+          <h3>📈 Last 6 Months Trend</h3>
+          <canvas id="barChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Recommendations -->
+      <div class="recs-section">
+        <div class="recs-title">🌿 Recommendations</div>
+        {% if recommendations %}
+          {% for tip in recommendations %}
+            <div class="rec-item">{{ tip }}</div>
+          {% endfor %}
+        {% else %}
+          <p style="color:#999; font-size:13px;">No recommendations yet. Keep tracking your emissions!</p>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  {% if department == 'manager' or department == 'kcic_admin' %}
+  new Chart(document.getElementById('donutChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Transport', 'Energy', 'Waste', 'Water'],
+      datasets: [{
+        data: [{{ transport_co2 }}, {{ energy_co2 }}, {{ waste_co2 }}, {{ water_co2 }}],
+        backgroundColor: ['#2e7d32', '#66bb6a', '#a5d6a7', '#1b5e20'],
+      }]
+    },
+    options: { plugins: { legend: { position: 'bottom' } } }
+  });
+  {% endif %}
+
+  new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+      labels: {{ monthly_labels|safe }},
+      datasets: [{
+        label: 'CO₂ (kg)',
+        data: {{ monthly_data|safe }},
+        backgroundColor: '#2e7d32',
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+</script>
+
+{% endblock %}

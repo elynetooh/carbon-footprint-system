@@ -130,3 +130,6 @@ EMAIL_HOST_PASSWORD = 'jmbp rbbc hmmq zsui'
 DEFAULT_FROM_EMAIL = 'KCIC Carbon Tracker <sanergy7@gmail.com>'
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+CSRF_TRUSTED_ORIGINS = [
+    "https://carbon-footprint-system-production.up.railway.app",
+]

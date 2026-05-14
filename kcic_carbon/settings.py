@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-9y&t2bgoejuju90m98#n#hd7-!uuy+m$z#@xuywcz5x2b7x$%=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -127,3 +128,5 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'sanergy7@gmail.com'
 EMAIL_HOST_PASSWORD = 'jmbp rbbc hmmq zsui'
 DEFAULT_FROM_EMAIL = 'KCIC Carbon Tracker <sanergy7@gmail.com>'
+STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'

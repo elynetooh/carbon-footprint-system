@@ -2,7 +2,6 @@
 {% block content %}
 
 <div style="background:#f4f6f4;min-height:calc(100vh - 60px);padding:32px 24px;">
-
   <div style="max-width:900px;margin:0 auto;">
 
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
@@ -40,13 +39,13 @@
       <table style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead>
           <tr style="background:#1a4a2e;color:#fff;">
-            <th style="padding:12px;text-align:left;border-radius:8px 0 0 0;">Department</th>
+            <th style="padding:12px;text-align:left;">Department</th>
             <th style="padding:12px;text-align:center;">Transport (kg)</th>
             <th style="padding:12px;text-align:center;">Energy (kg)</th>
             <th style="padding:12px;text-align:center;">Waste (kg)</th>
             <th style="padding:12px;text-align:center;">Water (kg)</th>
             <th style="padding:12px;text-align:center;">Total (kg)</th>
-            <th style="padding:12px;text-align:center;border-radius:0 8px 0 0;">Score</th>
+            <th style="padding:12px;text-align:center;">Score</th>
           </tr>
         </thead>
         <tbody>
@@ -74,7 +73,16 @@
 
     <div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:24px;margin-bottom:24px;">
       <h3 style="margin:0 0 16px;font-size:16px;color:#1a1a1a;">Department comparison</h3>
-      <canvas id="deptChart" height="100"></canvas>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center;">
+        <div>
+          <p style="font-size:12px;color:#888;margin:0 0 10px;">Emissions breakdown by category</p>
+          <canvas id="donutChart"></canvas>
+        </div>
+        <div>
+          <p style="font-size:12px;color:#888;margin:0 0 10px;">Total CO₂ per department</p>
+          <canvas id="deptChart" height="200"></canvas>
+        </div>
+      </div>
     </div>
 
     <div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:24px;margin-bottom:24px;">
@@ -147,8 +155,24 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  const ctx = document.getElementById('deptChart').getContext('2d');
-  new Chart(ctx, {
+  new Chart(document.getElementById('donutChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Transport', 'Energy', 'Waste', 'Water'],
+      datasets: [{
+        data: [
+          {% for d in dept_list %}{% if 'Field' in d.name %}{{ d.transport }}{% endif %}{% endfor %},
+          {% for d in dept_list %}{% if 'Processing' in d.name %}{{ d.energy }}{% endif %}{% endfor %},
+          {% for d in dept_list %}{% if 'Waste' in d.name %}{{ d.waste }}{% endif %}{% endfor %},
+          {% for d in dept_list %}{% if 'Water' in d.name %}{{ d.water }}{% endif %}{% endfor %}
+        ],
+        backgroundColor: ['#2e7d32','#66bb6a','#a5d6a7','#1b5e20'],
+      }]
+    },
+    options: { plugins: { legend: { position: 'bottom' } } }
+  });
+
+  new Chart(document.getElementById('deptChart'), {
     type: 'bar',
     data: {
       labels: [{% for d in dept_list %}"{{ d.name }}",{% endfor %}],
@@ -156,6 +180,7 @@
         label: 'Total CO2 (kg)',
         data: [{% for d in dept_list %}{{ d.total }},{% endfor %}],
         backgroundColor: ['#2e7d32','#66bb6a','#1b5e20','#a5d6a7'],
+        borderRadius: 4,
       }]
     },
     options: {

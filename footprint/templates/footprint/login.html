@@ -52,7 +52,6 @@
             to   { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        /* LEFT PANEL */
         .left-panel {
             flex: 1.1;
             background: linear-gradient(145deg, #1b5e20 0%, #2e7d32 40%, #00695c 100%);
@@ -175,7 +174,6 @@
             align-self: stretch;
         }
 
-        /* RIGHT PANEL */
         .right-panel {
             flex: 1;
             background: #ffffff;
@@ -223,18 +221,19 @@
             position: relative;
         }
 
-        .form-group .input-icon {
+        .input-icon {
             position: absolute;
             left: 14px;
             top: 50%;
             transform: translateY(-50%);
             font-size: 16px;
             pointer-events: none;
+            z-index: 2;
         }
 
         .form-group input {
             width: 100%;
-            padding: 13px 14px 13px 42px;
+            padding: 13px 44px 13px 42px;
             border: 1.5px solid #e0e0e0;
             border-radius: 10px;
             font-size: 14px;
@@ -251,6 +250,20 @@
             border-color: #2e7d32;
             background: #fff;
             box-shadow: 0 0 0 4px rgba(46,125,50,0.1);
+        }
+
+        .eye-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px;
+            z-index: 10;
+            line-height: 1;
         }
 
         .forgot-row {
@@ -412,16 +425,27 @@
 
         <form method="post">
             {% csrf_token %}
+
+            <!-- USERNAME -->
             <div class="form-group">
                 <span class="input-icon">👤</span>
                 <input type="text" name="username" placeholder="Username or Email" required autofocus>
             </div>
-            <div class="form-group">
+
+            <!-- PASSWORD WITH EYE TOGGLE -->
+            <div class="form-group" style="position: relative; display: block;">
                 <span class="input-icon">🔒</span>
-                <input type="password" name="password" placeholder="Password" required>
-            </div>
-            <div class="forgot-row">
-                <a href="/password-reset/" style="font-size:12px;color:#aaa;text-decoration:none;cursor:pointer;position:relative;z-index:99;display:inline-block;">Forgot password?</a>
+                <input type="password" name="password" 
+                       id="passwordInput" 
+                       placeholder="Password" 
+                       required
+                       style="padding-right: 50px;">
+                <button type="button" 
+                        class="eye-toggle" 
+                        onclick="togglePassword()"
+                        style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:20px; z-index:999;">
+                    👁️
+                </button>
             </div>
             <button type="submit" class="btn-login">LOG IN →</button>
         </form>
@@ -434,6 +458,20 @@
     </div>
 
 </div>
+
+<script>
+    function togglePassword() {
+        var input = document.getElementById('passwordInput');
+        var btn = document.getElementById('eyeBtn');
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.textContent = '🙈';
+        } else {
+            input.type = 'password';
+            btn.textContent = '👁️';
+        }
+    }
+</script>
 
 </body>
 </html>
